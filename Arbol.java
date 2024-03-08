@@ -5,6 +5,8 @@
 package lab8p2_hectorflores;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Comparator;
 import javax.swing.JTree;
@@ -160,4 +162,27 @@ public class Arbol {
         return nodo;
     }
     
+    
+    public DefaultMutableTreeNode crearCarpeta (DefaultMutableTreeNode nodoSeleccionado, String pathDeCarpeta){
+        
+        File folder = new File(pathDeCarpeta);
+        
+        folder.mkdirs();
+        
+        DefaultMutableTreeNode nodoNuevo = new DefaultMutableTreeNode(folder.getName());
+        
+        nodoSeleccionado.add(nodoNuevo);
+        
+        return nodoSeleccionado;
+    }
+    
+    public DefaultMutableTreeNode crearCustomFile (DefaultMutableTreeNode nodoSeleccionado, String pathDeArchivoComercial) throws IOException{
+        RandomAccessFile comercial = new RandomAccessFile(pathDeArchivoComercial, "rw");
+        
+        DefaultMutableTreeNode nodoNuevo = new DefaultMutableTreeNode(pathDeArchivoComercial);
+        
+        nodoSeleccionado.add(nodoNuevo);
+        
+        return nodoSeleccionado;
+    }
 }
