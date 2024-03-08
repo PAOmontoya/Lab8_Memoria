@@ -66,7 +66,7 @@ public class Arbol {
         return nodo;
     }
 
-    public DefaultMutableTreeNode organizarPorTipo (File file) {
+    public DefaultMutableTreeNode ordenarPorTipo (File file) {
         DefaultMutableTreeNode nodo = new DefaultMutableTreeNode(file.getName());
 
         if (file.isDirectory()) {
@@ -118,7 +118,7 @@ public class Arbol {
                 });
 
                 for (File childFile : files) {
-                    nodo.add(organizarPorTipo(childFile));
+                    nodo.add(ordenarPorTipo(childFile));
                 }
             }
         }
@@ -182,15 +182,45 @@ public class Arbol {
         return nodoSeleccionado;
     }
     
+    public DefaultMutableTreeNode crearUnArchivo (DefaultMutableTreeNode nodeSeleccionado, String path, String extension)  throws IOException{
+        if (extension.equals("txt")){
+            crearFile(nodeSeleccionado, path);
+        } else {
+            crearCustomFile(nodeSeleccionado, path);
+        }
+        
+        return null;
+    }
+    
+    public DefaultMutableTreeNode crearFile (DefaultMutableTreeNode nodoSeleccionado, String pathDeArchivoTXT) throws IOException{
+        if (pathDeArchivoTXT != null && !pathDeArchivoTXT.isEmpty()){
+            File archivo = new File (pathDeArchivoTXT);
+            archivo.createNewFile();
+
+            DefaultMutableTreeNode nodoNuevo = new DefaultMutableTreeNode(pathDeArchivoTXT);
+
+            nodoSeleccionado.add(nodoNuevo);
+            
+            return nodoSeleccionado;
+        }
+        
+        return null;
+    }
+    
     //Recibe el nodo seleccionado y el path del Archivo
     public DefaultMutableTreeNode crearCustomFile (DefaultMutableTreeNode nodoSeleccionado, String pathDeArchivoComercial) throws IOException{
-        RandomAccessFile comercial = new RandomAccessFile(pathDeArchivoComercial, "rw");
+       
+        if (pathDeArchivoComercial != null && !pathDeArchivoComercial.isEmpty()){
+            RandomAccessFile comercial = new RandomAccessFile(pathDeArchivoComercial, "rw");
         
-        DefaultMutableTreeNode nodoNuevo = new DefaultMutableTreeNode(pathDeArchivoComercial);
+            DefaultMutableTreeNode nodoNuevo = new DefaultMutableTreeNode(pathDeArchivoComercial);
+
+            nodoSeleccionado.add(nodoNuevo);
+
+            return nodoSeleccionado;
+        }
         
-        nodoSeleccionado.add(nodoNuevo);
-        
-        return nodoSeleccionado;
+        return null;
     }
     
     //Recibe el path del  archivo que debe venir del nodo seleccionado desde el swing

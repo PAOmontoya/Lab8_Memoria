@@ -5,11 +5,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Enumeration;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.event.AncestorListener;
+import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 public class WIN extends javax.swing.JFrame {
 
@@ -52,6 +58,22 @@ public class WIN extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         nuevoCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        nuevoCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nuevoCBActionPerformed(evt);
+            }
+        });
+
+        orderCB.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                orderCBItemStateChanged(evt);
+            }
+        });
+        orderCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                orderCBActionPerformed(evt);
+            }
+        });
 
         cutBTN.setText("Cut");
         cutBTN.addActionListener(new java.awt.event.ActionListener() {
@@ -164,7 +186,23 @@ public class WIN extends javax.swing.JFrame {
     }//GEN-LAST:event_cutBTNActionPerformed
 
     private void copyBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyBTNActionPerformed
-        //funciones de copiar
+        DefaultMutableTreeNode nodoSeleccionado = (DefaultMutableTreeNode) jTree1.getLastSelectedPathComponent();
+            
+        if (nodoSeleccionado == null){
+            return;
+        }
+        
+        String nombreNodoSeleccionado = nodoSeleccionado.toString();
+        
+        String destinationPath = JOptionPane.showInputDialog("Ingrese el destino donde se copiara este archivo");
+        
+        File destino = new File (destinationPath);
+        
+        if (destino.exists()){
+            FileManager.copyFileOrFolder(nombreNodoSeleccionado, destinationPath);
+        } else {
+            JOptionPane.showMessageDialog(null, "El destino no existe, no se ha copiado.");
+        }
     }//GEN-LAST:event_copyBTNActionPerformed
 
     private void pasteBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasteBTNActionPerformed
@@ -175,6 +213,20 @@ public class WIN extends javax.swing.JFrame {
         
     }//GEN-LAST:event_editCBActionPerformed
 
+    private void orderCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orderCBActionPerformed
+        
+    }//GEN-LAST:event_orderCBActionPerformed
+
+    private void orderCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_orderCBItemStateChanged
+
+    }//GEN-LAST:event_orderCBItemStateChanged
+
+    private void nuevoCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nuevoCBActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_nuevoCBActionPerformed
+
+    
+    
     private Arbol arbolHandler;
     
     /**
@@ -239,14 +291,39 @@ public class WIN extends javax.swing.JFrame {
             @Override
         public void actionPerformed(ActionEvent e){
             String selectedOption=(String) orderCB.getSelectedItem();
+            
+            DefaultMutableTreeNode nodoSeleccionado = (DefaultMutableTreeNode) jTree1.getLastSelectedPathComponent();
+            
+            if (nodoSeleccionado == null){
+                return;
+            }
+            
+            DefaultMutableTreeNode nodoActualizado = null;
+            
+            String nombreNodoSeleccionado = nodoSeleccionado.toString();
+        
+            File archivo = new File (nombreNodoSeleccionado);
+            
             if(selectedOption.equals("Nombre")){
-                //Ordenar por NOMBRE
+                nodoActualizado = arbolHandler.ordenarPorNombre(archivo);
             }else if(selectedOption.equals("Fecha")){
-                //Ordenar por FECHA
+                nodoActualizado = arbolHandler.ordenarPorFecha(archivo);
             }else if(selectedOption.equals("Tipo")){
-                //Ordenar por TIPO
+                nodoActualizado = arbolHandler.ordenarPorTipo(archivo);
             }else if(selectedOption.equals("Tamano")){
-                //Ordenar por TAMAÑO
+                nodoActualizado = arbolHandler.ordenarPorSize(archivo);
+            }
+            
+            if (nodoActualizado != null){
+                nodoSeleccionado.removeAllChildren();
+                Enumeration hijos = nodoActualizado.children();
+                
+                while (hijos.hasMoreElements()){
+                    nodoSeleccionado.add((DefaultMutableTreeNode) hijos.nextElement());
+                }
+                
+                DefaultMutableTreeNode modelo = ((DefaultMutableTreeNode) jTree1.getModel());
+                modelo.notifyAll();
             }
         }
         });
@@ -257,17 +334,52 @@ public class WIN extends javax.swing.JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             String selectedOption =(String) nuevoCB.getSelectedItem();
+            
+            DefaultMutableTreeNode nodoSeleccionado = (DefaultMutableTreeNode) jTree1.getLastSelectedPathComponent();
+            
+            if (nodoSeleccionado == null){
+                return;
+            }
+            
+            DefaultMutableTreeNode nodoActualizado = null;
+            
             if (selectedOption.equals("Archivo")) {
+                
                 String fileName = JOptionPane.showInputDialog(null, "Enter file name:");
+                
+                String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+                
                 if (fileName != null && !fileName.isEmpty()) {
-                    //usar en nombre fileName para crear nuevo archivo
+                    
+                    try {
+                        nodoActualizado = arbolHandler.crearUnArchivo(nodoSeleccionado, fileName, extension);
+                    }  catch (IOException h){
+                        
+                    }
+                    
+                } else {
+                    JOptionPane.showMessageDialog(null, "Debe ingresar un nombre para su archivo");
                 }
+                
             } else if (selectedOption.equals("Carpeta")) {
                 String folderName = JOptionPane.showInputDialog(null, "Enter folder name:");
                 if (folderName != null && !folderName.isEmpty()) {
-                    //usar el nombre folderName JOptionPane para crear nuevo folder
+                    nodoActualizado = arbolHandler.crearCarpeta(nodoSeleccionado, folderName);
                 }
             }
+            
+            if (nodoActualizado != null){
+                nodoSeleccionado.removeAllChildren();
+                Enumeration hijos = nodoActualizado.children();
+                
+                while (hijos.hasMoreElements()){
+                    nodoSeleccionado.add((DefaultMutableTreeNode) hijos.nextElement());
+                }
+                
+                DefaultMutableTreeNode modelo = ((DefaultMutableTreeNode) jTree1.getModel());
+                modelo.notifyAll();
+            }
+            
         }
     });
         
@@ -276,10 +388,26 @@ public class WIN extends javax.swing.JFrame {
            @Override
            public void actionPerformed(ActionEvent e){
                String selectedOption=(String)editCB.getSelectedItem();
+               
+               DefaultMutableTreeNode nodoSeleccionado = (DefaultMutableTreeNode) jTree1.getLastSelectedPathComponent();
+            
+                if (nodoSeleccionado == null){
+                    return;
+                }
+
+                String nombreNodoSeleccionado = nodoSeleccionado.toString();
+                
+                String newName = JOptionPane.showInputDialog("Ingrese el path nuevo del archivo:");
+               
                if(selectedOption.equals("Cambiar Nombre")){
-                   //Funcioambio de nombre de carpeta o archivo seleccionado
+                   FileManager.renameFileOrFolder(nombreNodoSeleccionado, newName);
                }else if(selectedOption.equals("Editar Archivo")){
-                   //Funciones de editar archivo
+                   
+                   try {
+                       arbolHandler.writeText(nombreNodoSeleccionado);
+                   } catch (IOException j){
+                       
+                   }
                }
            }
        }
