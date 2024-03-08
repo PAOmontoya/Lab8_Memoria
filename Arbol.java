@@ -5,10 +5,12 @@
 package lab8p2_hectorflores;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Comparator;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -20,9 +22,13 @@ public class Arbol {
     
     JTree arbol;
     
+    //Constructor para definir el arbol en swing de donde se tomaran los datos 
+    //(incluir al crear objeto tipo Arbol para llamar metodos)
     public Arbol(JTree arbol){
         this.arbol = arbol;
     }
+    
+    //Los siguientes 4 metodos reciben el directorio del cual se desea ordenar los archivos dentro
     
     public DefaultMutableTreeNode ordenarPorNombre (File file){
         DefaultMutableTreeNode nodo = new DefaultMutableTreeNode(file.getName());
@@ -162,7 +168,7 @@ public class Arbol {
         return nodo;
     }
     
-    
+    //Recibe el nodo seleccionado y el path de la carpeta
     public DefaultMutableTreeNode crearCarpeta (DefaultMutableTreeNode nodoSeleccionado, String pathDeCarpeta){
         
         File folder = new File(pathDeCarpeta);
@@ -176,6 +182,7 @@ public class Arbol {
         return nodoSeleccionado;
     }
     
+    //Recibe el nodo seleccionado y el path del Archivo
     public DefaultMutableTreeNode crearCustomFile (DefaultMutableTreeNode nodoSeleccionado, String pathDeArchivoComercial) throws IOException{
         RandomAccessFile comercial = new RandomAccessFile(pathDeArchivoComercial, "rw");
         
@@ -184,5 +191,24 @@ public class Arbol {
         nodoSeleccionado.add(nodoNuevo);
         
         return nodoSeleccionado;
+    }
+    
+    //Recibe el path del  archivo que debe venir del nodo seleccionado desde el swing
+    public void writeText (String path) throws IOException{
+        String extension = path.substring(path.lastIndexOf(".") + 1);
+        
+        File targetFile = new File (path);
+        
+        if (extension.equals("txt") && targetFile.isFile()){ 
+            String datosAEscribir = JOptionPane.showInputDialog("Ingrese lo que va a escribir en el archivo:");
+            
+            FileWriter writer = new FileWriter(targetFile);
+            
+            writer.write(datosAEscribir);
+            writer.close();
+            
+        } else {
+            JOptionPane.showMessageDialog(null, "El archivo debe de ser un archivo con extension .txt");
+        }
     }
 }
