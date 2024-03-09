@@ -414,35 +414,59 @@ public class WIN extends javax.swing.JFrame {
        );    
     }
     
-    /*
-    void jTreeActions(){
-         jTree1.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 2) {
-                TreePath selectedPath = jTree1.getSelectionPath();
-                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
-                File selectedFile = (File) selectedNode.getUserObject();
+    private DefaultTreeModel treeModel;
 
-                if (selectedFile.isDirectory()) {
-                    displayPAN.removeAll();
+    public WIN() {
+        initComponents();
+        this.setLocationRelativeTo(null);
+        setAll();
+        boxActions();
+        arbolHandler = new Arbol(jTree1);
+        // Populate the JTree with the file system
+        populateTree();
+        jTree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        jTree1.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)
+                                       jTree1.getLastSelectedPathComponent();
 
-                    File[] files = selectedFile.listFiles();
-                    if (files != null) {
-                        for (File file : files) {
-                            JLabel fileLabel = new JLabel(file.getName());
-                            displayPAN.add(fileLabel);
-                        }
-                    }
+                if (node == null) return;
 
-                    displayPAN.revalidate();
-                    displayPAN.repaint();
+                Object nodeInfo = node.getUserObject();
+                if (node.isLeaf()) {
+                    File selectedFile = (File) nodeInfo;
+                    // Do something with the selected file
+                    System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+                } else {
+                    // Accion cuando el folder es seleccionado 
                 }
             }
-        }
-    });
+        });
     }
-    */
+
+    //aqui le meto el sistema de files al jtree
+    private void populateTree() {
+        File rootFile = new File("YourRootDirectoryPath");
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootFile);
+        treeModel = new DefaultTreeModel(rootNode);
+        jTree1.setModel(treeModel);
+        jTree1.setRootVisible(true);
+        addFiles(rootFile, rootNode);
+    }
+
+    // aquí se añaden las files 
+    private void addFiles(File file, DefaultMutableTreeNode parentNode) {
+        if (!file.isDirectory()) return;
+
+        File[] files = file.listFiles();
+        for (File f : files) {
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(f);
+            parentNode.add(node);
+            if (f.isDirectory()) {
+                addFiles(f, node);
+            }
+        }
+    }
     
     
     
